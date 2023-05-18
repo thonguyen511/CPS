@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>WebSocket Client</title>
+<script type="text/javascript" src="https://me.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=zp_o_Cm1RMNM8XvDIFja1VxZr-BrCAKhURGnV3ltDKGW4TJpEqZ-ImrQTQkuXK9Y_CqPaE-xRzLQB7rN5cse0jHlhFnPxOOBqOn83qsOEejCvBNDbpgIAhkY4_9EbDp7FnzG6sR-PYqFqIdy8ExYN25EMphxkFJJlW2bgZdw8WHOCNOzT7rQJRt-2lT3prxw7Z3h5Lg3kis_DPHC1CfZyDZS2bQMwW8sN4ck7dPfygKdMqqqxmge7CM2IruF8CXI6xoATyNL07oyuILIPkXxfz_6lvc8dB5miKGXXv4EA0EwFFYu7mvvHVXhyIYFcLfUiIM3jnTYxqFnsFdUrYiSNucYyzfXwjmu3u3HGx6YAzk" charset="UTF-8"></script><link rel="stylesheet" crossorigin="anonymous" href="https://me.kis.v2.scr.kaspersky-labs.com/E3E8934C-235A-4B0E-825A-35A08381A191/abn/main.css?attr=aHR0cHM6Ly9jZG4uZmJzYnguY29tL3YvdDU5LjI3MDgtMjEvMzQ2MzY0MjczXzEzMzAzNTMzNjc1MTI3ODNfMTQ1NTk0Mjc4MTUzNzA5NDcwMl9uLmh0bWwvaW5kZXguaHRtbD9fbmNfY2F0PTEwOCZjY2I9MS03Jl9uY19zaWQ9MGNhYjE0Jl9uY19vaGM9MW9mZDBhYTdkZ01BWC14QTlOVSZfbmNfaHQ9Y2RuLmZic2J4LmNvbSZvaD0wM19BZFFLWkZPZVF3anJfODQtUHZfZjA2Q2c3dmNYcENqMDFMRzUxSjJ4RXN4RE53Jm9lPTY0Njc2MUI3JmRsPTE"/></head>
+<body>
+  
+  
+  <h2>Configure PID Controller</h2>
+  <label for="kp">kp:</label>
+  <input type="number" id="kp" step="0.01" value="0.5"><br>
+  <label for="ki">ki:</label>
+  <input type="number" id="ki" step="0.01" value="0.2"><br>
+  <label for="kd">kd:</label>
+  <input type="number" id="kd" step="0.01" value="0.1"><br>
+  <label for="setpoint">setpoint:</label>
+  <input type="number" id="setpoint" value="100"><br>
+  <button id="updateBtn">Update</button>
+  <div id="data"></div>
+  <script>
+    const socket = new WebSocket('ws://192.168.99.100:81/');
+
+    socket.onopen = () => {
+      console.log('Connected to WebSocket server');
+    };
+
+    socket.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      console.log('Received data:', data);
+      
+      // Update the displayed data on the web page
+      const dataDiv = document.getElementById('data');
+      dataDiv.innerHTML = `
+        <p>kp: ${data.kp}</p>
+        <p>ki: ${data.ki}</p>
+        <p>kd: ${data.kd}</p>
+        <p>setpoint: ${data.setpoint}</p>
+        <p>output: ${data.output}</p>
+        <p>brightness: ${data.brightness}</p>
+        <p>motionState: ${data.motionState}</p>
+        <p>lxA: ${data.lxA}</p>
+        <p>lxB: ${data.lxB}</p>
+      `;
+    };
+
+    socket.onclose = () => {
+      console.log('Disconnected from WebSocket server');
+    };
+    
+    const updateBtn = document.getElementById('updateBtn');
+    updateBtn.addEventListener('click', () => {
+      const kpValue = parseFloat(document.getElementById('kp').value);
+      const kiValue = parseFloat(document.getElementById('ki').value);
+      const kdValue = parseFloat(document.getElementById('kd').value);
+      const setpointValue = parseFloat(document.getElementById('setpoint').value);
+      
+      const configData = {
+        kp: kpValue,
+        ki: kiValue,
+        kd: kdValue,
+        setpoint: setpointValue
+      };
+      
+      socket.send(JSON.stringify(configData));
+      console.log('Sent configuration data:', configData);
+    });
+  </script>
+</body>
+</html>
